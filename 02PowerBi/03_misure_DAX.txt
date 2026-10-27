@@ -1,0 +1,84 @@
+MISURE DAX – Carburanti Dashboard ⛽
+Tabelle: andamento, regioni, province, marchi, tipo_strada, giorno_settimana, distribuzione_prezzi
+Filtri: carburanti[carburante] e modalita[modalita] (collegati a tutte le tabelle)
+
+Colore Carburante   (tabella carburanti) =
+    SELECTEDVALUE ( carburanti[colore], "#5B6573" )
+
+Prezzo Giornaliero   (tabella andamento) =
+    AVERAGE ( andamento[prezzo_medio] )
+    formato: #,##0.000" €"
+
+Prezzo Oggi   (tabella andamento) =
+    VAR ultimo = MAX ( andamento[data] ) RETURN CALCULATE ( AVERAGE ( andamento[prezzo_medio] ), andamento[data] = ultimo )
+    formato: #,##0.000" €"
+
+Prezzo Inizio   (tabella andamento) =
+    VAR primo = MIN ( andamento[data] ) RETURN CALCULATE ( AVERAGE ( andamento[prezzo_medio] ), andamento[data] = primo )
+    formato: #,##0.000" €"
+
+Variazione Periodo   (tabella andamento) =
+    [Prezzo Oggi] - [Prezzo Inizio]
+    formato: +0.000" €";-0.000" €"
+
+Prezzo Picco   (tabella andamento) =
+    MAXX ( VALUES ( andamento[data] ), [Prezzo Giornaliero] )
+    formato: #,##0.000" €"
+
+Data Picco   (tabella andamento) =
+    VAR t = ADDCOLUMNS ( VALUES ( andamento[data] ), "p", [Prezzo Giornaliero] ) RETURN FORMAT ( MAXX ( TOPN ( 1, t, [p], DESC ), andamento[data] ), "dd/mm" )
+
+Pieno 50 Litri   (tabella andamento) =
+    50 * [Prezzo Oggi]
+    formato: #,##0.00" €"
+
+Servito in Piu 50 Litri   (tabella andamento) =
+    50 * ( CALCULATE ( [Prezzo Giornaliero], modalita[modalita] = "Servito" ) - CALCULATE ( [Prezzo Giornaliero], modalita[modalita] = "Self" ) )
+    formato: +#,##0.00" €"
+
+Prezzo Regione   (tabella regioni) =
+    AVERAGE ( regioni[prezzo_ultimo_giorno] )
+    formato: #,##0.000" €"
+
+Scarto Regione   (tabella regioni) =
+    100 * ( [Prezzo Regione] - CALCULATE ( [Prezzo Regione], REMOVEFILTERS ( regioni[regione], regioni[zona] ) ) )
+    formato: +0.0" cent";-0.0" cent";0.0" cent"
+
+Prezzo Provincia   (tabella province) =
+    AVERAGE ( province[prezzo_ultimo_giorno] )
+    formato: #,##0.000" €"
+
+Aumento Provincia   (tabella province) =
+    100 * AVERAGE ( province[variazione] )
+    formato: +0.0" cent";-0.0" cent";0.0" cent"
+
+Distributori Provincia   (tabella province) =
+    SUM ( province[n_distributori] )
+    formato: #,##0
+
+Colore Fascia   (tabella province) =
+    SWITCH ( SELECTEDVALUE ( province[fascia] ), "Economica", "#1E9E5A", "Media", "#F2A900", "Cara", "#D64545", "#8A9099" )
+
+Scarto Marchio   (tabella marchi) =
+    100 * ( AVERAGE ( marchi[prezzo_medio] ) - CALCULATE ( AVERAGE ( marchi[prezzo_medio] ), REMOVEFILTERS ( marchi[marchio] ) ) )
+    formato: +0.0" cent";-0.0" cent";0.0" cent"
+
+Prezzo Self Strada   (tabella tipo_strada) =
+    CALCULATE ( AVERAGE ( tipo_strada[prezzo_medio] ), modalita[modalita] = "Self" )
+    formato: #,##0.000" €"
+
+Prezzo Servito Strada   (tabella tipo_strada) =
+    CALCULATE ( AVERAGE ( tipo_strada[prezzo_medio] ), modalita[modalita] = "Servito" )
+    formato: #,##0.000" €"
+
+Autostrada in Piu 50 Litri   (tabella tipo_strada) =
+    50 * ( CALCULATE ( AVERAGE ( tipo_strada[prezzo_medio] ), tipo_strada[tipo_strada] = "Autostradale" ) - CALCULATE ( AVERAGE ( tipo_strada[prezzo_medio] ), tipo_strada[tipo_strada] = "Stradale" ) )
+    formato: +#,##0.00" €"
+
+Scarto Giorno   (tabella giorno_settimana) =
+    100 * ( AVERAGE ( giorno_settimana[prezzo_medio] ) - CALCULATE ( AVERAGE ( giorno_settimana[prezzo_medio] ), REMOVEFILTERS ( giorno_settimana[giorno], giorno_settimana[n_giorno] ) ) )
+    formato: +0.0" cent";-0.0" cent";0.0" cent"
+
+N Distributori Fascia   (tabella distribuzione_prezzi) =
+    SUM ( distribuzione_prezzi[n_distributori] )
+    formato: #,##0
