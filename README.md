@@ -2,6 +2,8 @@
 
 Progetto di **Francesco Autorino** – Data Analyst.
 
+![Prezzi dei carburanti](copertina.png)
+
 🛠️ Strumenti: **SQL · Power BI** (Python solo per scaricare e pulire i dati)
 
 📊 Dati: **5,8 milioni di prezzi** di **21.902 distributori**, dal 28 luglio al 15 ottobre 2026.
